@@ -71,39 +71,29 @@ services:
     container_name: streamstack-db
     restart: unless-stopped
     ports:
-      - "5432:5432"       # 如与其他 PostgreSQL 冲突，改为 "5433:5432"
+      - "5432:5432"   # 如已有其他 PostgreSQL 占用 5432，改为如："5433:5432"
     volumes:
-      - ./pgdata:/var/lib/postgresql/data   # 数据库文件持久化（必须）
+      - ./pgdata:/var/lib/postgresql/data #请正确挂载数据库路径
     environment:
       - POSTGRES_USER=streamstack
-      - POSTGRES_PASSWORD=your_db_password  # 修改为强密码，需与主应用 DATABASE_URL 一致
+      - POSTGRES_PASSWORD=streamstack       # ← 修改为强密码，需与主应用 DB_PASSWORD 完全一致
       - POSTGRES_DB=streamstack
       - TZ=Asia/Shanghai
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U streamstack -d streamstack"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   redis:
     image: redis:7-alpine
     container_name: streamstack-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"       # 如与其他 Redis 冲突，改为 "6380:6379"
+      - "6379:6379"   # 如已有其他 Redis 占用 6379，改为如："6380:6379"
     command: >
       redis-server
-      --requirepass your_redis_password
+      --requirepass streamstack
       --maxmemory 256mb
       --maxmemory-policy allkeys-lru
       --save ""
       --appendonly no
-    # 修改 your_redis_password，需与主应用 REDIS_URL 中密码一致
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "your_redis_password", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
+    # ↑ 修改 streamstack 为你的密码，需与主应用 REDIS_URL 中密码完全一致 ← 修改
 ```
 
 启动数据库服务：
@@ -123,40 +113,33 @@ services:
     container_name: streamstack
     restart: unless-stopped
     ports:
-      - "5717:5717"     # Web 界面，如需改端口修改左边数字，如 "8080:5717"
-      - "9098:9098"     # Emby 反向代理（不用 Emby 功能可删除此行）
+      - "5717:5717"   # Web 界面端口，如需改端口修改左侧数字，如："8080:5717"
+      - "9098:9098"   # Emby 反代端口，不用 Emby 功能可删除此行
     volumes:
-      - ./config:/config                              # 配置与数据持久化（必须）
-      - /your/media/path:/media                       # 媒体目录，改为实际路径
-      - /var/run/docker.sock:/var/run/docker.sock:ro  # 一键更新所需
-      - .:/project:ro
+      - ./config:/config   #请正确挂载用户配置路径
+      - /your/media/path:/media             # ← 修改为你的媒体目录路径
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
     environment:
       - TZ=Asia/Shanghai
-      - APP_PORT=5717
+      - ADMIN_USERNAME=admin                # ← 修改为你的用户名
+      - ADMIN_PASSWORD=streamstack          # ← 修改为强密码（必须修改！）
 
-      # 管理员账号（仅首次启动生效，之后修改无效）
-      - ADMIN_USERNAME=admin                          # 修改为你的用户名
-      - ADMIN_PASSWORD=your_admin_password            # 必须修改为强密码
+      # PostgreSQL 连接（与 docker-compose.db.yml 中保持一致）
+      - DB_HOST=127.0.0.1
+      - DB_PORT=5432                        # ← 如修改过端口请同步修改
+      - DB_NAME=streamstack
+      - DB_USER=streamstack
+      - DB_PASSWORD=streamstack             # ← 修改为与 docker-compose.db.yml 中相同的密码
 
-      # PostgreSQL 连接（格式：postgresql://用户名:密码@地址:端口/数据库名）
-      # 密码需与 docker-compose.db.yml 中 POSTGRES_PASSWORD 完全一致
-      - DATABASE_URL=postgresql://streamstack:your_db_password@host.docker.internal:5432/streamstack
+      # Redis 连接（密码需与 docker-compose.db.yml 中 --requirepass 一致）
+      - REDIS_URL=redis://:streamstack@127.0.0.1:6379/0  # ← 修改密码部分
 
-      # Redis 连接（密码需与 docker-compose.db.yml 中 --requirepass 完全一致）
-      - REDIS_URL=redis://:your_redis_password@host.docker.internal:6379/0
+      - DOCKER_UPDATE_ENABLED=1
+      # - PROXY_HOST=http://192.168.1.100:7890   # ← 代理地址（可选）
+      # - ACTIVATION_CODE=                        # ← VIP 激活码（可选）
 
-      # 激活码（可选，不填则以免费版运行）
-      # - ACTIVATION_CODE=
-
-      # 代理（可选）
-      # - PROXY_HOST=http://192.168.1.100:7890
-
-      # 一键更新
-      - DOCKER_UPDATE_ENABLED=true
-      - DOCKER_COMPOSE_FILE=/project/docker-compose.yml
-      - DOCKER_COMPOSE_SERVICE=streamstack
-
-    # Linux 必须保留；macOS / Windows Docker Desktop 可删除此段
+    # Linux 用户必须保留；macOS / Windows Docker Desktop或其他 可删除
     extra_hosts:
       - "host.docker.internal:host-gateway"
 ```
