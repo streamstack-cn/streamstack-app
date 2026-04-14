@@ -5,6 +5,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/streamstack/streamstack)](https://hub.docker.com/r/streamstack/streamstack)
 [![Version](https://img.shields.io/docker/v/streamstack/streamstack/latest?label=version)](https://hub.docker.com/r/streamstack/streamstack/tags)
 [![Platform](https://img.shields.io/badge/platform-amd64%20%7C%20arm64-blue)](https://hub.docker.com/r/streamstack/streamstack)
+[![Telegram](https://img.shields.io/badge/Telegram-交流群-26A5E4?logo=telegram)](https://t.me/streamstack_chat)
 
 ---
 
@@ -246,10 +247,10 @@ docker compose up -d
 ## 官方链接
 
 - 🌐 官网：[streamstack.cn](https://streamstack.cn)
-- 📖 文档：[streamstack.cn/wiki](https://streamstack.cn/wiki)
+- 📖 文档：[streamstack.cn/wiki](https://streamstack.cn/wiki)  
 - 💬 反馈：[streamstack.cn/feedback](https://streamstack.cn/feedback)
 - 🐳 Docker Hub：[hub.docker.com/r/streamstack/streamstack](https://hub.docker.com/r/streamstack/streamstack)
-
+- 📣 Telegram 交流群：[加入讨论，使用答疑 & 功能反馈](https://t.me/streamstack_chat)
 ---
 
 ## Tags
